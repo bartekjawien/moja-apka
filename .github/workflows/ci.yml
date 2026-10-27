@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v4
+
+      - name: Ustaw Pythona
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Zainstaluj zależności
+        run: pip install -r requirements.txt
+
+      - name: Uruchom testy
+        run: python -m pytest -v
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Pobierz kod
+        uses: actions/checkout@v4
+
+      - name: Zbuduj obraz Dockera
+        run: docker build -t moja-apka .
+
+      - name: Uruchom kontener
+        run: docker run -d -p 5000:5000 --name moja-apka moja-apka
+
+      - name: Sprawdź, czy aplikacja odpowiada
+        run: curl --fail --retry 5 --retry-connrefused --retry-delay 2 http://localhost:5000/health
+
+      - name: Testy wewnątrz kontenera
+        run: docker run --rm moja-apka python -m pytest -v
+EOF
