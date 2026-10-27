@@ -40,4 +40,4 @@ jobs:
 
       - name: Testy wewnątrz kontenera
         run: docker run --rm moja-apka python -m pytest -v
-EOF
+
